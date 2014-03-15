@@ -1,0 +1,30 @@
+(* The Most Origin Version *)
+(* Author: AlephAlpha *)
+(* First Publication: http://blog.renren.com/blog/339469092/923657886?from=339469092#comment_47455583597522944 *)
+(* 他说：不要在意变量名这些细节。*)
+
+挪[右] = # //. {{x___, a_ /; a > 1, 1, y___} :> {x, 1, a, y},
+      {Longest[x___], a_ /; a > 1, a_, y___} :> {x, 1, 2 抓住[a], 
+        y}} /. 抓住[a_] :> a &;
+挪[下] = Composition[Transpose, 挪[右], Transpose];
+挪[上] = Composition[Reverse, 挪[下], Reverse];
+挪[左] = Composition[Transpose, 挪[上], Transpose];
+加块瓦 = ReplacePart[#, RandomChoice@Position[#, 1] -> 2] &;
+按键 = If[格子 != 挪[#][格子], 格子 = 加块瓦[挪[#][格子]];
+    Which[And @@ (格子 == 挪[#][格子] & /@ {左, 右, 上, 下}), 
+     状态 = "呜……动不了了……",
+     ! FreeQ[格子, 2048], 状态 = "2048！"]] &;
+格子 = 加块瓦[ConstantArray[1, {4, 4}]];
+状态 = "";
+EventHandler[Dynamic[ArrayPlot[Log2@格子/11,
+   ColorFunction -> "StarryNightColors",
+   ColorFunctionScaling -> False,
+   Mesh -> All,
+   Epilog -> {MapIndexed[
+      Text[If[#1 == 1, "", Style[#1, "Section"]], #2 - {0.5, 0.5}] &, 
+      Transpose@Reverse@格子, {2}],
+     Text[Style[状态, "Section"], {2, 2}]}]],
+ {"LeftArrowKeyDown" :> 按键[左],
+  "RightArrowKeyDown" :> 按键[右],
+  "UpArrowKeyDown" :> 按键[上],
+  "DownArrowKeyDown" :> 按键[下]}]
